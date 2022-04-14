@@ -14,3 +14,4 @@ cursor = sq_conn.cursor()
 cursor.execute(table1)
 sq_conn.commit()
 cursor.close()
+

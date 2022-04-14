@@ -1,8 +1,9 @@
 from aiogram import Dispatcher, Bot, executor, types
 from aiogram.dispatcher.filters.state import StatesGroup, State
-from votesdb import voter
+from votesdb import voter, spectate_vote
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
-from admin_data import token
+from admin_data import token, admin_id
+from datetime import datetime
 
 
 bot = Bot(token=token)
@@ -20,6 +21,7 @@ class state(StatesGroup):
 @dp.message_handler(commands='start')
 async def start_message(message: types.Message):
     await message.answer(text='Привет, введи /help')
+    await bot.send_message(chat_id=admin_id, text=f'Пользователь с id {message.chat.id} начал работу с ботом')
 
 @dp.message_handler(commands='help')
 async def help_message(message: types.Message):
@@ -54,5 +56,15 @@ async def non_vote_message(message: types.Message):
 @dp.message_handler(commands='help', state = state.state2)
 async def help_non_vote_message(message: types.Message):
     await message.answer('Вы уже проголосовали. Хотите понаблюдать за результатами? - /watch')
+
+@dp.message_handler(commands='start', state = state.state2)
+async def start_message(message: types.Message):
+    await message.answer(text='Привет, введи /help')
+
+@dp.message_handler(commands='watch', state= state.state2)
+async def spectate_message(message: types.Message):
+    ivan_votes, farid_votes = spectate_vote()
+    await message.answer(text=f'За Ивана проголосовало {ivan_votes} человек, а за Фарида проголосовало {farid_votes} человек.\nАктуально на {str(datetime.now())}')
+
 
 executor.start_polling(dp)
